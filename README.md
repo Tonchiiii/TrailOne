@@ -10,19 +10,21 @@ cd trailone
 
 2. **Create and activate a virtual environment:**
 python -m venv env
-source env/bin/activate # On Windows: env\Scripts\activate
+source env/bin/activate
+
+On Windows: env\Scripts\activate
 
 
-3. **Install dependencies:**
+4. **Install dependencies:**
 pip install -r requirements.txt
 
 
-4. **Apply migrations and run the server:**
+5. **Apply migrations and run the server:**
 python manage.py migrate
 python manage.py runserver
 
 
-5. **Access the app:**  
+6. **Access the app:**  
 Open `http://localhost:8000` in your browser.
 
 
