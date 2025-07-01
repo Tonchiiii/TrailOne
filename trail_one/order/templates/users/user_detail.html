@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Details - TrailOne{% endblock %}
+{% block page_name %}User{% endblock %}
+{% block content %}
+
+<div class="main-content">
+  <div class="content-wrapper">
+    <h1 class="page-title">User Details</h1>
+    
+    {% for message in messages %}
+      {% if 'error' in message.tags %}
+        <div class="alert alert-danger">{{ message }}</div>
+      {% elif 'success' in message.tags %}
+        <div class="alert alert-success">{{ message }}</div>
+      {% else %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="account-details-container" style="max-width: 900px; margin: 0 auto;">
+      <div class="profile-header">
+        <div class="profile-avatar">{{ user.name|slice:":1" }}</div>
+        <div class="profile-info">
+          <div class="profile-name">{{ user.name }}</div>
+          <div class="profile-email">{{ user.email }}</div>
+          <span class="status-badge status-completed">{{ user.role }}</span>
+        </div>
+      </div>
+
+      <div class="account-sections" style="display: flex;">
+        <div class="account-section" style="width: 100%;">
+          <h3 class="section-title">User Information</h3>
+          <div class="account-detail">
+            <span class="detail-label">Full Name</span>
+            <span class="detail-value">{{ user.name }}</span>
+          </div>
+          <div class="account-detail">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ user.email }}</span>
+          </div>
+          <div class="account-detail">
+            <span class="detail-label">Role</span>
+            <span class="detail-value">{{ user.role }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="changePasswordBtn" class="btn btn-secondary">Change Password</button>
+        <!-- <button id="editProfileBtn" class="btn btn-primary">Edit Profile</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<div id="changePasswordModal" class="edit-modal">
+    <div class="edit-modal-content">
+      <div class="edit-modal-header">
+        <h2>Change Password</h2>
+        <span class="edit-modal-close">&times;</span>
+      </div>
+      <form method="POST" action="{% url 'change_password' user.email %}">
+        {% csrf_token %}
+        <!-- <div class="edit-form-group">
+          <label class="edit-form-label">Current Password</label>
+          <input type="password" name="current_password" class="edit-form-input" placeholder="Enter current password">
+        </div> -->
+        <div class="edit-form-group">
+          <label class="edit-form-label">New Password</label>
+          <input type="password" name="new_password" class="edit-form-input" placeholder="Enter new password">
+        </div>
+        <div class="edit-form-group">
+          <label class="edit-form-label">Confirm New Password</label>
+          <input type="password" name="confirm_password" class="edit-form-input" placeholder="Confirm new password">
+        </div>
+        <div class="action-buttons">
+          <button type="button" class="btn btn-secondary edit-modal-close" style="font-size: 16px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="font-size: 16px;">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- Edit Profile Modal -->
+<!-- <div id="editProfileModal" class="edit-modal">
+  <div class="edit-modal-content">
+    <div class="edit-modal-header">
+      <h2>Edit Profile</h2>
+      <span class="edit-modal-close">&times;</span>
+    </div>
+    <form method="POST" action="">
+      {% csrf_token %}
+      <div class="edit-form-group">
+        <label>Full Name</label>
+        <input type="text" name="full_name" value="{{ user.name }}" class="edit-form-input" required>
+      </div>
+      <div class="edit-form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ user.email }}" class="edit-form-input" required>
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="btn btn-secondary edit-modal-close">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div> -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const changePasswordModal = document.getElementById('changePasswordModal');
+      const closeModalButtons = document.querySelectorAll('.edit-modal-close');
+
+      changePasswordBtn.addEventListener('click', function() {
+        changePasswordModal.style.display = 'flex';
+      });
+
+
+      closeModalButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          changePasswordModal.style.display = 'none';
+        });
+      });
+
+      // Close modal if clicked outside of it
+      window.addEventListener('click', function(event) {
+        if (event.target == changePasswordModal) {
+          changePasswordModal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+{% endblock %}

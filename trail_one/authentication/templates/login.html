@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Gurmukhi:ital@0;1&display=swap" rel="stylesheet">
+  <title>TrailOne - Login</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Sen', 'Tiro Gurmukhi';
+    }
+
+    body {
+        background-color: #FFF9EC;
+        height: 100vh;
+        display: flex;
+        overflow: hidden;
+    }
+
+    .login-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+
+    .brand-section {
+        flex: 1;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .content-wrapper {
+        width: 100%;
+        max-width: 500px;
+        padding: 0 32px;
+    }
+
+    .logo {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .logo img {
+        width: 150px;
+        height: auto;
+    }
+
+    .brand-tagline {
+        color: #4d3629;
+        text-align: center;
+    }
+
+    .brand-tagline h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        font-family: 'Tiro Gurmukhi';
+    }
+
+    .brand-tagline p {
+        color: #888;
+        line-height: 1.6;
+        font-family: 'Tiro Gurmukhi';
+    }
+
+    .login-section {
+        flex: 1;
+        background-color: #52493E;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        padding: 0 32px;
+    }
+
+    .login-form {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-form input {
+        width: 100%;
+        height: 40px;
+        border: none;
+        border-radius: 6px;
+        padding: 0 12px;
+        margin-bottom: 16px;
+    }
+
+    .login-form button {
+        width: 100%;
+        height: 40px;
+        border: none;
+        border-radius: 6px;
+        background-color: #d35f27;
+        color: white;
+        cursor: pointer;
+    }
+
+    .login-form .or-divider {
+        text-align: center;
+        margin: 16px 0;
+        position: relative;
+        color: #888;
+    }
+
+    .login-form .or-divider::before,
+    .login-form .or-divider::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 45%;
+        height: 1px;
+        background-color: #888;
+    }
+
+    .login-form .or-divider::before {
+        left: 0;
+    }
+
+    .login-form .or-divider::after {
+        right: 0;
+    }
+
+    .google-login {
+        width: 100%;
+        height: 40px;
+        border: 1px solid white;
+        border-radius: 6px;
+        background-color: transparent;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .google-login img {
+        height: 20px;
+        margin-right: 10px;
+    }
+
+    .sign-in{
+        width: 100%;
+        height: 40px;
+        margin-top: 20px;
+        border: 1px solid white;
+        border-radius: 6px;
+        background-color: transparent;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="brand-section">
+      <div class="content-wrapper">
+        <div class="logo">
+          <img src="{% static 'images/logo2.png' %}" alt="TrailOne Logo">
+        </div>
+        <div class="brand-tagline">
+          <h1>It takes one to trail one</h1>
+          <p>TrailOne is your premium web logistics solution designed to automate shipment encoding, track inventory in real-time, and enhance operational accuracy for freight-forwarding and logistics companies.</p>
+        </div>
+      </div>
+    </div>
+    <div class="login-section">
+      <div class="login-form">
+        <form method="POST" action="{% url 'userLogin' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Email</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert {{ message.tags }}" style="color: red; margin-top: 10px; margin-bottom: 10px;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

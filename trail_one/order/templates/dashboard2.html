@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track - TrailOne{% endblock %}
+
+{% block page_name %}Track{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;"><i>≡</i></th>
+                <th style="width: 50px;">No.</th>
+                <th style="width: 150px;">Order ID</th>
+                <th style="width: 200px;">Client ▼</th>
+                <th style="width: 200px;">Date Created ▼</th>
+                <th style="width: 120px;">Status ▼</th>
+                <th style="width: 100px;">Delivered</th>
+                <th style="width: 100px;">Missing</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><div class="checkbox checked"></div></td>
+                <td>01</td>
+                <td>PH-TR-7294</td>
+                <td style="color: #b0a090;">DMCI Mining Co.</td>
+                <td style="color: #b0a090;">August 10, 2026</td>
+                <td><span class="status completed">Completed</span></td>
+                <td>123</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td><div class="checkbox"></div></td>
+                <td>02</td>
+                <td>LGT-853921</td>
+                <td style="color: #b0a090;">Holcim Philippines</td>
+                <td style="color: #b0a090;">May 27, 2026</td>
+                <td><span class="status pending">Pending</span></td>
+                <td>7564</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td><div class="checkbox"></div></td>
+                <td>03</td>
+                <td>CMB-47063X</td>
+                <td style="color: #b0a090;">Holcim Philippines</td>
+                <td style="color: #b0a090;">February 14, 2026</td>
+                <td><span class="status pending">Pending</span></td>
+                <td>324</td>
+                <td>5</td>
+            </tr>
+            <tr>
+                <td><div class="checkbox"></div></td>
+                <td>04</td>
+                <td>SLT-90275</td>
+                <td style="color: #b0a090;">Holcim Philippines</td>
+                <td style="color: #b0a090;">October 31, 2025</td>
+                <td><span class="status pending">Pending</span></td>
+                <td>56</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td><div class="checkbox"></div></td>
+                <td>05</td>
+                <td>PHX-6381-TL</td>
+                <td style="color: #b0a090;">DMCI Mining Co.</td>
+                <td style="color: #b0a090;">July 19, 2025</td>
+                <td><span class="status pending">Pending</span></td>
+                <td>321</td>
+                <td>12</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination">
+    <a href="#">«</a>
+    <a href="#">‹</a>
+    <a href="#" class="active">1</a>
+    <a href="#">2</a>
+    <a href="#">3</a>
+    <a href="#">...</a>
+    <a href="#">10</a>
+    <a href="#">›</a>
+    <a href="#">»</a>
+</div>
+{% endblock %}

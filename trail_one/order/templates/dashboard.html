@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - TrailOne{% endblock %}
+
+{% block page_name %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="welcome-text">
+      <p><b>Good day, {{ user_name }}</b></p>
+      <p><b>&emsp;Welcome to <b>TrailOne!</b></b></p>
+    </div>
+    <!-- <img src="{% static 'images/Group 46.png' %}" alt="Dashboard Image" style="max-width: 200px; position: absolute; x: 50; y: 10; transform: translate(180%, -80%);"> -->
+  </div>
+
+  <div class="deliveries-container">
+    <div class="deliveries-section">
+      <h2>Pending Deliveries</h2>
+      <table class="deliveries-table">
+        <thead>
+          <tr>
+            <th>Shipment ID</th>
+            <th>Client</th>
+            <th>Date Created</th>
+            <th>Total Delivered</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if pending_deliveries %}
+            {% for shipment in pending_deliveries %}
+              <tr>
+                <td>{{ shipment.shipment_id }}</td>
+                <td>{{ shipment.user.name }}</td>
+                <td>{{ shipment.created_at|date:"F d, Y" }}</td>
+                <td class="text-green">{{ shipment.total_quantity }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="5">Nothing to display</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="deliveries-section">
+      <h2>Recently Completed Deliveries</h2>
+      <table class="deliveries-table">
+        <thead>
+          <tr>
+            <th>Shipment ID</th>
+            <th>Client</th>
+            <th>Date Created</th>
+            <th>Total Delivered</th>
+            <th>Missing</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if completed_deliveries %}
+            {% for shipment in completed_deliveries %}
+              <tr>
+                <td>{{ shipment.shipment_id }}</td>
+                <td>{{ shipment.user.name }}</td>
+                <td>{{ shipment.created_at|date:"F d, Y" }}</td>
+                <td class="text-green">{{ shipment.total_quantity }}</td>
+                <td>
+                  {{ shipment.total_missing }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="5">Nothing to display</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice - Order #{{ shipment.shipment_id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; color: #333; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .summary { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .box { border: 1px solid #ccc; padding: 15px; width: 45%; }
+        h1, h3 { margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border-bottom: 1px solid #ccc; }
+        th { background: #f4f4f4; }
+        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>INVOICE</h1>
+        <p>Shipment Order #{{ shipment.shipment_id }}</p>
+    </div>
+    <div class="summary">
+        <div class="box">
+            <h3>Client Info</h3>
+            <p><strong>Name:</strong> {{ shipment.user.name }}</p>
+            <p><strong>Email:</strong> {{ shipment.user.email }}</p>
+            <p><strong>Date:</strong> {{ shipment.created_at }}</p>
+        </div>
+        <div class="box">
+            <h3>Order Summary</h3>
+            <p><strong>Status:</strong> {{ shipment.status|title }}</p>
+            <p><strong>Total Items:</strong> {{ total_quantity }}</p>
+            <p><strong>Missing Items:</strong> {{ missing_quantity }}</p>
+        </div>
+    </div>
+    <h3>Order Items</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Description</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in shipment.items.all %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer">
+        <p>Thank you for your business!</p>
+    </div>
+</body>
+</html>

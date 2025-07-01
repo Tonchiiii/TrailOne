@@ -1,0 +1,122 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{% static 'css/style2.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>{% block title %}TrailOne - Tracking System{% endblock %}</title>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- Logo -->
+    <div class="logo-container">
+      <div class="logo">
+        <img src="{% static 'images/logo1.png' %}" alt="Logo" width="100">
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+      {# Dashboard Link #}
+      {% with dashboard_img='Group 7.png' %}
+        {% if request.path == '/dashboard' %}
+          {% with dashboard_img='Group 7(1).png' %}
+            <a href="{% url 'dashboard' %}" class="nav-link active" style="color: orange;">
+              <img src="{% static 'images/'|add:dashboard_img %}" width="24" height="24" alt="Dashboard Icon">
+              <span>Dashboard</span>
+            </a>
+          {% endwith %}
+        {% else %}
+          <a href="{% url 'dashboard' %}" class="nav-link" style="color: inherit;">
+            <img src="{% static 'images/'|add:dashboard_img %}" width="24" height="24" alt="Dashboard Icon">
+            <span>Dashboard</span>
+          </a>
+        {% endif %}
+      {% endwith %}
+      
+      {# Track Orders Link #}
+      {% with track_img='Group 13.png' %}
+        {% if request.path|slice:":13" == '/orders/track' %}
+          {% with track_img='Group 13(1).png' %}
+            <a href="{% url 'view_track_orders' %}" class="nav-link active" style="color: orange;">
+              <img src="{% static 'images/'|add:track_img %}" width="24" height="24" alt="Track Icon">
+              <span>Track</span>
+            </a>
+          {% endwith %}
+        {% else %}
+          <a href="{% url 'view_track_orders' %}" class="nav-link">
+            <img src="{% static 'images/'|add:track_img %}" width="24" height="24" alt="Track Icon">
+            <span>Track</span>
+          </a>
+        {% endif %}
+      {% endwith %}
+      
+      {# New Order Link (Non-CLIENT Only) #}
+      {% if request.session.user_role != 'CLIENT' %}
+        {% with new_img='Group 44.png' %}
+          {% if request.path == '/orders/create' %}
+            {% with new_img='Group 44(1).png' %}
+              <a href="{% url 'view_create_orders' %}" class="nav-link active" style="color: orange;">
+                <img src="{% static 'images/'|add:new_img %}" width="24" height="24" alt="New Icon">
+                <span>New</span>
+              </a>
+            {% endwith %}
+          {% else %}
+            <a href="{% url 'view_create_orders' %}" class="nav-link" style="color: inherit;">
+              <img src="{% static 'images/'|add:new_img %}" width="24" height="24" alt="New Icon">
+              <span>New</span>
+            </a>
+          {% endif %}
+        {% endwith %}
+      {% endif %}
+
+      {# Users Link (SUPER_ADMIN Only) #}
+      {% if request.session.user_role == 'SUPER_ADMIN' %}
+        {% with users_img='Group 47.png' %}
+          {% if request.path|slice:":7" == '/users/' %}
+            {% with users_img='Group 47 (1).png' %}
+              <a href="{% url 'view_users' %}" class="nav-link active" style="color: orange;">
+                <img src="{% static 'images/'|add:users_img %}" width="24" height="24" alt="Users Icon">
+                <span>Users</span>
+              </a>
+            {% endwith %}
+          {% else %}
+            <a href="{% url 'view_users' %}" class="nav-link" style="color: inherit;">
+              <img src="{% static 'images/'|add:users_img %}" width="24" height="24" alt="Users Icon">
+              <span>Users</span>
+            </a>
+          {% endif %}
+        {% endwith %}
+      {% endif %}      
+
+      <a href="{% url 'view_edit_account' %}" class="nav-link {% if request.path == '/account/view-edit' %}active{% endif %}" 
+          style="color: {% if request.path == '/account/edit' %}orange{% else %}inherit{% endif %};">
+        <img src="{% static 'images/Group 21.png' %}" width="24" height="24" alt="Settings Icon">
+        <span>Account</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-wrapper">
+      <div class="header-wrapper">
+        <h1 class="page-title">{% block page_name %}{% endblock %}</h1>
+        {% if request.path == '/account/view-edit' %}
+          <a href="{% url 'logout' %}" class="logout-btn">🚪 Logout</a>
+        {% endif %}
+      </div>
+
+      {% block content %}
+      {% endblock %}
+    </div>
+  </div>
+</body>
+</html>

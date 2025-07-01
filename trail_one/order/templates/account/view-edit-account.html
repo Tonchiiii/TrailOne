@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account Details - TrailOne{% endblock %}
+{% block page_name %}Account Details{% endblock %}
+{% block content %}
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-wrapper">
+      <h1 class="page-title">Account</h1>
+      {% for message in messages %}
+        {% if 'error' in message.tags %}
+          <div class="alert alert-danger">
+            {{ message }}
+          </div>
+        {% elif 'success' in message.tags %}
+          <div class="alert alert-success">
+            {{ message }}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
+      <div class="account-details-container" style="max-width: 900px; margin: 0 auto;">
+        <div class="profile-header">
+          <div class="profile-avatar">{{ request.session.user_name|slice:":1" }}</div>
+          <div class="profile-info">
+            <div class="profile-name">{{ request.session.user_name }}</div>
+            <div class="profile-email">{{ request.session.user_email }}</div>
+            <span class="status-badge status-completed">{{ request.session.user_role }}</span>
+          </div>
+        </div>
+  
+        <div class="account-sections" style="width: 100%; padding: 0; margin: 0; display:flex">
+          <div class="account-section" style="width: 100%; box-sizing: border-box;">
+            <h3 class="section-title">Account Information</h3>
+            <div class="account-detail">
+              <span class="detail-label">Full Name</span>
+              <span class="detail-value">{{ request.session.user_name }}</span>
+            </div>
+            <div class="account-detail">
+              <span class="detail-label">Email</span>
+              <span class="detail-value">{{ request.session.user_email }}</span>
+            </div>
+            <div class="account-detail">
+              <span class="detail-label">Role</span>
+              <span class="detail-value">{{ request.session.user_role }}</span>
+            </div>
+          </div>
+        </div>
+  
+        <div class="action-buttons">
+          <button id="changePasswordBtn" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Change Password
+          </button>
+          <button id="editProfileBtn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Edit Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="edit-modal">
+    <div class="edit-modal-content">
+      <div class="edit-modal-header">
+        <h2>Change Password</h2>
+        <span class="edit-modal-close">&times;</span>
+      </div>
+      <form method="POST" action="{% url 'change_password' request.session.user_email %}">
+        {% csrf_token %}
+        <div class="edit-form-group">
+          <label class="edit-form-label">Current Password</label>
+          <input type="password" name="current_password" class="edit-form-input" placeholder="Enter current password">
+        </div>
+        <div class="edit-form-group">
+          <label class="edit-form-label">New Password</label>
+          <input type="password" name="new_password" class="edit-form-input" placeholder="Enter new password">
+        </div>
+        <div class="edit-form-group">
+          <label class="edit-form-label">Confirm New Password</label>
+          <input type="password" name="confirm_password" class="edit-form-input" placeholder="Confirm new password">
+        </div>
+        <div class="action-buttons">
+          <button type="button" class="btn btn-secondary edit-modal-close" style="font-size: 16px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="font-size: 16px;">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="edit-modal">
+    <div class="edit-modal-content">
+      <div class="edit-modal-header">
+        <h2>Edit Profile</h2>
+        <span class="edit-modal-close">&times;</span>
+      </div>
+      <form method="POST" action="{% url 'update_profile' %}">
+        {% csrf_token %}
+        <div class="edit-form-group">
+          <label class="edit-form-label" for="full_name">Full Name</label>
+          <input
+            type="text"
+            class="edit-form-input"
+            id="full_name"
+            name="full_name"
+            value="{{ request.session.user_name }}"
+            required
+          >
+        </div>
+        <div class="edit-form-group">
+          <label class="edit-form-label" for="email">Email</label>
+          <input
+            type="email"
+            class="edit-form-input"
+            id="email"
+            name="email"
+            value="{{ request.session.user_email }}"
+            required
+          >
+        </div>
+        <div class="action-buttons">
+          <button type="button" class="btn btn-secondary edit-modal-close" style="font-size: 16px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="font-size: 16px;">Save Changes</button>          
+        </div>
+      </form>
+    </div>
+  </div>  
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const changePasswordModal = document.getElementById('changePasswordModal');
+      const editProfileBtn = document.getElementById('editProfileBtn');
+      const editProfileModal = document.getElementById('editProfileModal');
+      const closeModalButtons = document.querySelectorAll('.edit-modal-close');
+
+      changePasswordBtn.addEventListener('click', function() {
+        changePasswordModal.style.display = 'flex';
+      });
+
+      editProfileBtn.addEventListener('click', function() {
+        editProfileModal.style.display = 'flex';
+      });
+
+      closeModalButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          changePasswordModal.style.display = 'none';
+          editProfileModal.style.display = 'none';
+        });
+      });
+
+      // Close modal if clicked outside of it
+      window.addEventListener('click', function(event) {
+        if (event.target == changePasswordModal) {
+          changePasswordModal.style.display = 'none';
+        }
+        if (event.target == editProfileModal) {
+          editProfileModal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+{% endblock %}

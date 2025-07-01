@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add User - TrailOne{% endblock %}
+{% block page_name %}Add User{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <div class="content-wrapper">
+    <h1 class="page-title">Add New User</h1>
+
+    {% for message in messages %}
+      {% if 'error' in message.tags %}
+        <div class="alert alert-danger">{{ message }}</div>
+      {% elif 'success' in message.tags %}
+        <div class="alert alert-success">{{ message }}</div>
+      {% else %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="account-details-container" style="max-width: 600px; margin: 0 auto;">
+      <form method="POST" action="{% url 'add_user_save' %}">
+        {% csrf_token %}
+
+        <div class="edit-form-group">
+          <label class="edit-form-label">Full Name</label>
+          <input type="text" name="full_name" class="edit-form-input" placeholder="Enter full name" required>
+        </div>
+
+        <div class="edit-form-group">
+          <label class="edit-form-label">Email</label>
+          <input type="email" name="email" class="edit-form-input" placeholder="Enter email address" required>
+        </div>
+
+        <div class="edit-form-group">
+          <label class="edit-form-label">Password</label>
+          <input type="password" name="password" class="edit-form-input" placeholder="Enter password" required>
+        </div>
+
+        <div class="edit-form-group">
+          <label class="edit-form-label">Confirm Password</label>
+          <input type="password" name="confirm_password" class="edit-form-input" placeholder="Confirm password" required>
+        </div>
+
+        <div class="edit-form-group">
+          <label class="edit-form-label">Role</label>
+          <select name="role" class="edit-form-input" required>
+            <option value="">Select a role</option>
+            <option value="CLIENT">CLIENT</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+
+        <div class="action-buttons" style="margin-top: 20px;">
+          <a href="" class="btn btn-secondary" style="margin-right: 10px;">Cancel</a>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

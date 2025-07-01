@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - TrailOne{% endblock %}
+
+{% block page_name %}Track Orders{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <div class="content-wrapper">
+    <h1 class="page-title">Track Shipments</h1>
+      {% for message in messages %}
+        {% if 'error' in message.tags %}
+          <div class="alert alert-danger">
+            {{ message }}
+          </div>
+        {% elif 'success' in message.tags %}
+          <div class="alert alert-success">
+            {{ message }}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
+      
+    <!-- Table -->
+    <div class="table-container">
+      <!-- Table Header -->
+      <div class="table-header">
+        <div class="table-cell cell-no" style="width: 5%;"><b>No.</b></div>
+        <div class="table-cell cell-product-id" style="width: 15%;"><b>Shipment ID</b></div>
+        <div class="table-cell cell-client" style="width: 15%;">
+          <b>Client Name</b>
+        </div>
+        <div class="table-cell cell-date" style="width: 15%;">
+          <b>Date Created</b>
+        </div>
+        <div class="table-cell cell-status" style="width: 25%;">
+          <b>Status</b>
+          <div class="sort-icon-container" style="position: relative;">
+            <svg class="icon sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" onclick="toggleDropdown()">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <!-- Dropdown Menu -->
+            <div id="status-dropdown" class="status-dropdown" style="display: none; position: absolute; top: 100%; left: 0; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; width: 200px; z-index: 10; padding: 10px;">
+              <form method="get" action="">
+                <select name="status" onchange="this.form.submit()" class="status-dropdown-select">
+                  <option value="" {% if not status_filter %}selected{% endif %}>All</option>
+                  <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>Shipped</option>
+                  <option value="arrived_at_destination" {% if status_filter == 'arrived_at_destination' %}selected{% endif %}>Arrived at Destination</option>
+                  <option value="unloading_for_inspection" {% if status_filter == 'unloading_for_inspection' %}selected{% endif %}>Unloading for Inspection</option>
+                  <option value="under_review" {% if status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
+                  <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+                </select>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="table-cell cell-delivered" style="width: 10%;"><b>Delivered</b></div>
+        <div class="table-cell cell-missing" style="width: 10%;"><b>Missing</b></div>
+      </div>
+      
+      <!-- Table Rows -->
+      {% for shipment in page_obj %}
+      <div class="table-row">
+        <div class="table-cell cell-no text-gray" style="width: 5%;">{{ forloop.counter }}</div>
+        <div class="table-cell cell-product-id font-medium" style="width: 15%;"><a href="{% url 'view_track_order_detail' id=shipment.shipment_id %}">{{ shipment.shipment_id }}</a></div>
+        <div class="table-cell cell-client text-gray" style="width: 15%;">{{ shipment.user.name }}</div>
+        <div class="table-cell cell-date text-gray" style="width: 15%;">{{ shipment.created_at|date:"F d, Y" }}</div>
+        <div class="table-cell cell-status" style="width: 25%;">
+          <span class="status-badge {% if shipment.status == 'delivered' %}status-completed
+          {% elif shipment.status == 'pending' %}status-pending
+          {% else %}status-cancelled{% endif %}">
+            {% if shipment.status == 'shipped' %}
+              Shipped
+            {% elif shipment.status == 'arrived_at_destination' %}
+              Arrived At Destination
+            {% elif shipment.status == 'unloading_for_inspection' %}
+              Unloading For Inspection
+            {% elif shipment.status == 'under_review' %}
+              Under Review
+            {% elif shipment.status == 'delivered' %}
+              Delivered
+            {% elif shipment.status == 'pending' %}
+              Pending
+            {% else %}
+              {{ shipment.status|title }}
+            {% endif %}
+          </span>
+        </div>
+        <div class="table-cell cell-delivered text-gray" style="width: 10%;">{{ shipment.total_quantity }}</div>
+        <div class="table-cell cell-missing text-gray" style="width: 10%;">
+          {% if shipment.status == 'delivered' %}
+            {{ shipment.total_missing }}
+          {% else %}
+            0
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <button class="page-button" onclick="location.href='?page=1'" aria-label="First">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="11 17 6 12 11 7"></polyline>
+            </svg>
+          </button>
+          <button class="page-button" onclick="location.href='?page={{ page_obj.previous_page_number }}'" aria-label="Previous">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="18 17 13 12 18 7"></polyline>
+            </svg>
+          </button>
+        {% else %}
+          <button class="page-button" disabled>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="11 17 6 12 11 7"></polyline>
+            </svg>
+          </button>
+          <button class="page-button" disabled>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="18 17 13 12 18 7"></polyline>
+            </svg>
+          </button>
+        {% endif %}
+      
+        {% for num in page_obj.paginator.page_range %}
+          <button class="page-button {% if page_obj.number == num %}active{% endif %}" onclick="location.href='?page={{ num }}'" aria-label="Page {{ num }}">{{ num }}</button>
+        {% endfor %}
+      
+        {% if page_obj.has_next %}
+          <button class="page-button" onclick="location.href='?page={{ page_obj.next_page_number }}'" aria-label="Next">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+          <button class="page-button" onclick="location.href='?page={{ page_obj.paginator.num_pages }}'" aria-label="Last">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="13 17 18 12 13 7"></polyline>
+            </svg>
+          </button>
+        {% else %}
+          <button class="page-button" disabled>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+          <button class="page-button" disabled>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <polyline points="13 17 18 12 13 7"></polyline>
+            </svg>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Function to toggle the dropdown visibility
+  function toggleDropdown() {
+    const dropdown = document.getElementById('status-dropdown');
+    
+    // If dropdown is already visible, hide it
+    if (dropdown.style.display === 'block') {
+      dropdown.style.display = 'none';
+    } else {
+      // Hide any other dropdowns that may be open and then show the current one
+      const allDropdowns = document.querySelectorAll('.status-dropdown');
+      allDropdowns.forEach(function(dropdown) {
+        dropdown.style.display = 'none';
+      });
+      dropdown.style.display = 'block';
+    }
+  }
+
+  // Close the dropdown if clicking outside of it
+  document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('status-dropdown');
+    const icon = document.querySelector('.sort-icon-container');
+    
+    // Check if the click was outside the dropdown and the icon, if so, hide the dropdown
+    if (!icon.contains(event.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+
+{% block title %}Shipment Detail{% endblock %}
+
+{% block page_name %}Shipment Detail{% endblock %}
+
+{% block content %}
+<style>
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .right-actions {
+    display: flex;
+    gap: 10px;
+  }
+</style>
+<div class="main-content">
+    <div class="content-wrapper">
+      <h1 class="page-title">Track Order</h1>
+      {% for message in messages %}
+        {% if 'error' in message.tags %}
+          <div class="alert alert-danger">
+            {{ message }}
+          </div>
+        {% elif 'success' in message.tags %}
+          <div class="alert alert-success">
+            {{ message }}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
+      
+
+      <div class="order-details-container">
+        <div class="order-header">
+          <div>
+            <h2 style="color: #4d3629; font-size: 24px;">Order #{{ shipment.shipment_id }}</h2>
+              <span class="status-badge {% if shipment.status == 'delivered' %}status-completed{% else %}status-pending{% endif %}" id="order-status-badge">
+                {% if shipment.status == 'shipped' %}
+                  Shipped
+                {% elif shipment.status == 'arrived_at_destination' %}
+                  Arrived At Destination
+                {% elif shipment.status == 'unloading_for_inspection' %}
+                  Unloading For Inspection
+                {% elif shipment.status == 'under_review' %}
+                  Under Review
+                {% elif shipment.status == 'delivered' %}
+                  Delivered
+                {% elif shipment.status == 'pending' %}
+                  Pending
+                {% else %}
+                  {{ shipment.status|title }}
+                {% endif %}
+              </span>
+          </div>
+          <div>
+            <strong>Date Created:</strong> {{ shipment.created_at }}
+          </div>
+        </div>
+        
+        <div class="order-details-section">
+          <div class="details-card">
+            <h3>Client Information</h3>
+            <div class="details-item">
+              <span class="label">Client Name</span>
+              <span>{{ shipment.user.name }}</span>
+            </div>
+            <div class="details-item">
+              <span class="label">Email</span>
+              <span>{{ shipment.user.email }}</span>
+            </div>
+          </div>
+        
+          <div class="details-card">
+            <h3>Order Summary</h3>
+            <div class="details-item">
+              <span class="label">Total Items</span>
+              <span id="total-items">{{ total_quantity }}</span>
+            </div>
+            {% if shipment.status == 'delivered' %}
+                <div class="details-item">
+                <span class="label">Missing Items</span>
+                <span id="missing-items">{{ missing_quantity }}</span>
+                </div>
+            {% endif %}
+          </div>
+        </div>
+        {% if request.session.user_role == 'CLIENT' and shipment.status == 'under_review' %}
+        <form method="POST" action="{% url 'submit_missing_items' shipment_id=shipment.shipment_id %}">
+        {% csrf_token %}
+        {% endif %}
+        <div class="order-details-section" style="grid-template-columns: 1fr;">
+          <div class="details-card">
+            <h3>Products</h3>
+            <table class="products-table">
+                <thead>
+                    <tr>
+                      <th>Product ID</th>
+                      <th>Description</th>
+                      <th>Quantity</th>
+                      {% if request.session.user_role == 'CLIENT' and shipment.status == 'under_review' %}
+                      <th>Missing Quantity</th>
+                    {% endif %}
+                    </tr>
+                  </thead>
+                  <tbody id="products-tbody">
+                    {% for item in shipment.items.all %}
+                      <tr data-item-id="{{ item.id }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.description }}</td>
+                        <td>{{ item.quantity }}</td>
+                        {% if request.session.user_role == 'CLIENT' and shipment.status == 'under_review' %}
+                        <td>
+                          <input type="number" name="missing_qty_{{ item.id }}" min="0" max="{{ item.quantity }}" style="width: 80px;" placeholder="0">
+                        </td>
+                      {% endif %}
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+            {% if request.session.user_role == 'CLIENT' and shipment.status == 'under_review' %}
+                <div style="margin-top: 10px;">
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+            </form>
+            {% endif %}
+
+            {% if shipment.status != 'under_review' and shipment.status != 'delivered' %}
+                {% if next_status %}
+                    <form method="POST" id="change-status-form" action="{% url 'change_shipment_status' shipment_id=shipment.shipment_id %}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-primary" onclick="confirmChangeStatus()">
+                            Change Status to
+                            {% if next_status == 'shipped' %}
+                                Shipped
+                            {% elif next_status == 'arrived_at_destination' %}
+                                Arrived At Destination
+                            {% elif next_status == 'unloading_for_inspection' %}
+                                Unloading For Inspection
+                            {% elif next_status == 'under_review' %}
+                                Under Review
+                            {% elif next_status == 'delivered' %}
+                                Delivered
+                            {% elif next_status == 'pending' %}
+                                Pending
+                            {% else %}
+                                {{ next_status|title }}
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            {% if shipment.status == 'delivered' %}
+                <div class="right-actions">
+                    <button class="btn btn-secondary" onclick="printOrder()">Print Order</button>
+                    <button class="btn btn-primary" onclick="downloadInvoice()">Download Invoice</button>
+                </div>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
+  <script type="text/javascript">
+    function confirmChangeStatus() {
+        // Show confirmation dialog
+        const confirmation = confirm("Are you sure you want to change the status?");
+        
+        if (confirmation) {
+            // If confirmed, submit the form
+            document.getElementById("change-status-form").submit();
+        }
+    }
+    
+    function printOrder() {
+        // Hide UI elements not needed in print
+        const originalContent = document.body.innerHTML;
+        const printContent = document.querySelector('.order-details-container').innerHTML;
+        
+        document.body.innerHTML = `
+            <div style="padding: 20px;">
+                <h1 style="text-align: center;">Shipment Order #${document.querySelector('.order-header h2').textContent.split('#')[1]}</h1>
+                ${printContent}
+            </div>
+        `;
+        
+        // Remove action buttons from print view
+        const actionButtons = document.querySelector('.action-buttons');
+        if (actionButtons) actionButtons.style.display = 'none';
+        
+        window.print();
+        
+        // Restore original content
+        document.body.innerHTML = originalContent;
+    }
+
+    async function downloadInvoice() {
+    // Extract dynamic data from DOM
+    const orderNumber = document.querySelector('.order-header h2').textContent.split('#')[1].trim();
+    const orderStatus = document.querySelector('#order-status-badge').textContent.trim();
+    const dateCreated = document.querySelector('.order-header div:last-child').textContent.trim();
+    const clientName = "{{ shipment.user.name|escapejs }}"; // server-side render this
+    const totalItems = document.getElementById('total-items')?.textContent.trim() || '0';
+    const missingItemsEl = document.getElementById('missing-items');
+    const missingItems = missingItemsEl ? missingItemsEl.textContent.trim() : '0';
+
+    // Collect products table rows data
+    const productsTable = document.querySelector('.products-table');
+    const rows = productsTable.querySelectorAll('tbody tr');
+    let productsHTML = '';
+
+    rows.forEach(row => {
+        const productId = row.cells[0].textContent.trim();
+        const description = row.cells[1].textContent.trim();
+        const quantity = row.cells[2].textContent.trim();
+
+        productsHTML += `
+            <tr>
+                <td>${productId}</td>
+                <td>${description}</td>
+                <td>${quantity}</td>
+            </tr>
+        `;
+    });
+
+    // Create a container div for the invoice HTML
+    const container = document.createElement('div');
+    container.style.fontFamily = 'Arial, sans-serif';
+    container.style.color = '#333';
+    container.style.padding = '20px';
+
+    container.innerHTML = `
+        <div style="text-align: center; padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 20px;">
+            <h1>INVOICE</h1>
+            <p>Order #${orderNumber}</p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div style="border: 1px solid #ddd; padding: 10px; width: 48%;">
+                <h3>Order Information</h3>
+                <p><strong>Date:</strong> ${dateCreated}</p>
+                <p><strong>Status:</strong> ${orderStatus}</p>
+                <p><strong>Client:</strong> ${clientName}</p>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 10px; width: 48%;">
+                <h3>Order Summary</h3>
+                <p><strong>Total Items:</strong> ${totalItems}</p>
+                <p><strong>Missing Items:</strong> ${missingItems}</p>
+            </div>
+        </div>
+
+        <h3>Order Items</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Product ID</th>
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Description</th>
+                    <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${productsHTML}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #777;">
+            <p>Thank you for your business!</p>
+        </div>
+    `;
+
+    document.body.appendChild(container);
+    
+    // Use jsPDF to convert container HTML to PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+        unit: 'pt',
+        format: 'a4',
+    });
+
+    await pdf.html(container, {
+        callback: function (doc) {
+            doc.save(`invoice-order-${orderNumber}.pdf`);
+            document.body.removeChild(container);
+        },
+        margin: [40, 40, 40, 40],
+        autoPaging: 'text',
+        html2canvas: { scale: 0.8 }
+    });
+}
+
+    
+    // function downloadInvoice() {
+    //     // Get order data
+    //     const orderNumber = document.querySelector('.order-header h2').textContent.split('#')[1].trim();
+    //     const orderStatus = document.querySelector('#order-status-badge').textContent.trim();
+    //     const dateCreated = document.querySelector('.order-header div:last-child').textContent.trim();
+    //     const clientName = "{{ shipment.user.name|escapejs }}";
+    //     const totalItems = document.getElementById('total-items')?.textContent.trim() || '0';
+    //     const missingItemsEl = document.getElementById('missing-items');
+    //     const missingItems = missingItemsEl ? missingItemsEl.textContent.trim() : '0';
+        
+    //     // Get products data
+    //     const productsTable = document.querySelector('.products-table');
+    //     const rows = productsTable.querySelectorAll('tbody tr');
+    //     let productsHTML = '';
+        
+    //     rows.forEach(row => {
+    //         const productId = row.cells[0].textContent;
+    //         const description = row.cells[1].textContent;
+    //         const quantity = row.cells[2].textContent;
+            
+    //         productsHTML += `
+    //             <tr>
+    //                 <td>${productId}</td>
+    //                 <td>${description}</td>
+    //                 <td>${quantity}</td>
+    //             </tr>
+    //         `;
+    //     });
+        
+    //     // Create invoice HTML
+    //     const invoiceHTML = `
+    //         <!DOCTYPE html>
+    //         <html>
+    //         <head>
+    //             <meta charset="utf-8">
+    //             <title>Invoice - Order #${orderNumber}</title>
+    //             <style>
+    //                 body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
+    //                 .invoice-header { text-align: center; padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+    //                 .invoice-details { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    //                 .invoice-details-box { border: 1px solid #ddd; padding: 10px; width: 48%; }
+    //                 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    //                 th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+    //                 th { background-color: #f2f2f2; }
+    //                 .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #777; }
+    //             </style>
+    //         </head>
+    //         <body>
+    //             <div class="invoice-header">
+    //                 <h1>INVOICE</h1>
+    //                 <p>Order #${orderNumber}</p>
+    //             </div>
+                
+    //             <div class="invoice-details">
+    //                 <div class="invoice-details-box">
+    //                     <h3>Order Information</h3>
+    //                     <p><strong>Date:</strong> ${dateCreated}</p>
+    //                     <p><strong>Status:</strong> ${orderStatus}</p>
+    //                     <p><strong>Client:</strong> ${clientName}</p>
+    //                 </div>
+    //                 <div class="invoice-details-box">
+    //                     <h3>Order Summary</h3>
+    //                     <p><strong>Total Items:</strong> ${totalItems}</p>
+    //                     <p><strong>Missing Items:</strong> ${missingItems}</p>
+    //                 </div>
+    //             </div>
+                
+    //             <h3>Order Items</h3>
+    //             <table>
+    //                 <thead>
+    //                     <tr>
+    //                         <th>Product ID</th>
+    //                         <th>Description</th>
+    //                         <th>Quantity</th>
+    //                     </tr>
+    //                 </thead>
+    //                 <tbody>
+    //                     ${productsHTML}
+    //                 </tbody>
+    //             </table>
+                
+    //             <div class="footer">
+    //                 <p>Thank you for your business!</p>
+    //             </div>
+    //         </body>
+    //         </html>
+    //     `;
+        
+    //     // Create Blob and download
+    //     const blob = new Blob([invoiceHTML], { type: 'text/html' });
+    //     const link = document.createElement('a');
+    //     link.href = URL.createObjectURL(blob);
+    //     link.download = `invoice-order-${orderNumber}.html`;
+    //     link.click();
+    // }
+  </script>
+{% endblock %}

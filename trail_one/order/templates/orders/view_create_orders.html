@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - TrailOne{% endblock %}
+
+{% block page_name %}Create orders{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-wrapper">
+      {% for message in messages %}
+        {% if 'error' in message.tags %}
+          <div class="alert alert-danger">
+            {{ message }}
+          </div>
+        {% elif 'success' in message.tags %}
+          <div class="alert alert-success">
+            {{ message }}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
+      <form method="post" action="{% url 'create_order' %}" class="form-container" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-section">
+          <h2>Client Information</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="client" class="form-label">Client</label>
+              <select id="client" name="client" class="form-control" required style="width: 500px;">
+                <option value="">Select Client</option>
+                {% for client in clients %}
+                  <option value="{{ client.user_id }}">{{ client.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h2>Products</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="csv_file" class="form-label">Upload Product CSV</label>
+              <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv">
+              <small class="form-text">CSV should include columns for Description and Quantity</small>
+            </div>
+          </div>
+          <div class="form-row" id="csv-preview">
+            <div class="form-group">
+              <label class="form-label">Preview</label>
+              <div id="preview-container" class="preview-box">
+                <p>CSV data will appear here after upload</p>
+              </div>
+            </div>
+          </div>
+          <table class="products-table" id="products-table" style="display: none;">
+            <thead>
+              <tr>
+                <th>Product ID</th>
+                <th>Description</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody id="product-rows">
+            </tbody>
+          </table>
+        </div>
+       
+        <div class="action-buttons">
+          <!-- <button type="button" class="btn btn-secondary" data-url="" onclick="window.location.href=this.getAttribute('data-url')">Cancel</button> -->
+          <button type="submit" class="btn btn-primary">Create Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const clientSelect = document.getElementById('client');
+      const csvFileInput = document.getElementById('csv_file');
+      const previewContainer = document.getElementById('preview-container');
+      const productsTable = document.getElementById('products-table');
+      const productRows = document.getElementById('product-rows');
+
+      // CSV file handling
+      csvFileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+    
+        if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+          previewContainer.innerHTML = '<div class="csv-error">Please upload a CSV file.</div>';
+          return;
+        }
+
+          // Prevent preview if file is larger than 30MB (30 * 1024 * 1024 bytes)
+        const maxSize = 30 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+          previewContainer.innerHTML = '<div class="csv-error">File is too large. Must be under 30MB.</div>';
+
+          return;
+        }
+    
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          try {
+            const csvData = event.target.result.trim();
+            const lines = csvData.split('\n').filter(line => line.trim() !== '');
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    
+            const expectedHeaders = ['description', 'quantity'];
+            const hasValidHeaders = expectedHeaders.every(h => headers.includes(h));
+            if (!hasValidHeaders) {
+              previewContainer.innerHTML = '<div class="csv-error">CSV must have headers: Description, Quantity</div>';
+              return;
+            }
+    
+            // Clear previous content
+            previewContainer.innerHTML = '';
+            productRows.innerHTML = '';
+    
+            // Show preview table
+            let previewHTML = '<table class="preview-table" style="width:100%; border-collapse: collapse;">';
+            previewHTML += '<tr><th>Description</th><th>Quantity</th></tr>';
+    
+            const descIndex = headers.indexOf('description');
+            const qtyIndex = headers.indexOf('quantity');
+            const validRows = [];
+    
+            for (let i = 1; i < lines.length; i++) {
+              const cells = lines[i].split(',').map(c => c.trim());
+              if (cells.length !== headers.length) continue;
+    
+              const description = cells[descIndex];
+              const quantity = cells[qtyIndex];
+              if (!description || !quantity) continue;
+    
+              validRows.push({ description, quantity });
+              previewHTML += `<tr><td>${description}</td><td>${quantity}</td></tr>`;
+            }
+    
+            previewHTML += '</table>';
+            previewContainer.innerHTML = previewHTML;
+          } catch (err) {
+            previewContainer.innerHTML = `<div class="csv-error">Error processing CSV: ${err.message}</div>`;
+          }
+        };
+    
+        reader.onerror = function() {
+          previewContainer.innerHTML = '<div class="csv-error">Error reading the file.</div>';
+        };
+    
+        reader.readAsText(file);
+      });
+    });
+    </script>
+    
+{% endblock %}
