@@ -5,11 +5,13 @@ TrailOne is a logistics management web application built with Django. It is desi
 
 1. **Clone the repository:**
 git clone https://github.com/Tonchiiii/TrailOne.git
+
 cd trailone
 
 
-2. **Create and activate a virtual environment:**
+3. **Create and activate a virtual environment:**
 python -m venv env
+
 source env/bin/activate
 
 On Windows: env\Scripts\activate
